@@ -5,6 +5,7 @@ import streamlit as st
 import plotly.graph_objects as go
 import numpy as np
 from streamlit_option_menu import option_menu
+from sklearn.preprocessing import MinMaxScaler
 
 
 def get_clean_data():
@@ -193,8 +194,8 @@ with st.sidebar:
                             'Heart Disease Prediction',
                             'Parkinsons Prediction'],
                            menu_icon='hospital-fill',
-                           icons=['activity', 'heart', 'person'],
-                           default_index=0)
+                           icons=['health','fa-ribbon','activity', 'heart', 'person'],
+                               default_index=0)
 
 
 if selected =='BMI Calculator':
@@ -356,21 +357,31 @@ if selected == 'Heart Disease Prediction':
     heart_diagnosis = ''
 
     # creating a button for Prediction
-
+    scaler_heart = pickle.load(open('C:/Users/Lenovo/OneDrive/Desktop/Multiple Disease Prediction System/saved_models/scaler_heart.pkl', 'rb'))
+    
     if st.button('Heart Disease Test Result'):
 
-        user_input = [age, sex, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]
-
-        user_input = [float(x) for x in user_input]
-
-        heart_prediction = heart_disease_model.predict([user_input])
-
-        if heart_prediction[0] == 1:
-            heart_diagnosis = 'The person is having heart disease'
+        input_data = [age, sex, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]
+       
+        input_data = [float(x) for x in input_data]
+        
+        input_data=scaler_heart.transform([input_data])
+        #print(input_data)
+        # change the input data to a numpy array
+        input_data_as_numpy_array= np.asarray(input_data)
+        #print(input_data)
+        #reshape the numpy array as we are predicting for only on instance
+        input_data_reshaped = input_data_as_numpy_array.reshape(1,-1)
+        
+        prediction = heart_disease_model.predict(input_data)
+        #print(prediction)
+        
+        if prediction[0]== 1:
+            heart_diagnosis = "The person has Heart Disease"
         else:
-            heart_diagnosis = 'The person does not have any heart disease'
+            heart_diagnosis = "The person does not have Heart Disease"
 
-    st.success(heart_diagnosis)
+        st.success(heart_diagnosis)
 
 # Parkinson's Prediction Page
 if selected == "Parkinsons Prediction":
